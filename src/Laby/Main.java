@@ -11,23 +11,18 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-        	String projectPath = System.getProperty("user.dir");
-        	System.out.println("Current working directory: " + projectPath+ "/src/Laby/graph.txt");
-        	WeightedGraph weightedGraph = readGraphFromFile(projectPath + "\\src\\Laby\\graph.txt");
-        	
-            // Test de la classe.
-            AStar astar = new AStar(weightedGraph.vertexlist.get(0), weightedGraph.vertexlist.get(5));
+            // Remplacez le chemin absolu suivant par le vôtre
+            String filePath = "C:\\Users\\TRETEC\\eclipse-workspace\\ProjetAlgo\\src\\Laby\\graph.txt";
+            System.out.println("Graph file path: " + filePath);
+
+            WeightedGraph weightedGraph = readGraphFromFile(filePath);
+
+            // Création d'une instance de AStar avec le nœud de départ et le nœud d'arrivée
+            AStar astar = new AStar(weightedGraph.vertexlist.get(0), weightedGraph.vertexlist.get(5)); // À adapter selon vos besoins
 
             // Appel de la méthode solve et impression du résultat
             List<WeightedGraph.Vertex> path = astar.solve();
-            if (path == null) {
-                System.out.println("No solution found.");
-            } else {
-                System.out.println("Solution found:");
-                for (WeightedGraph.Vertex v : path) {
-                    System.out.println("Vertex " + v.num);
-                }
-            }
+            System.out.println(path);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -61,7 +56,7 @@ public class Main {
 
             if (isGraphSection && line.length() == ncols) {
                 for (int i = 0; i < line.length(); i++) {
-                    int vertex = i % ncols; // Utilisez le reste de la division pour calculer le numéro du sommet
+                    int vertex = i % ncols;
                     int color = mapColorToInt(String.valueOf(line.charAt(i)));
                     LinkedList<Integer> neighbors = graph.getOrDefault(vertex, new LinkedList<>());
                     if (!neighbors.contains(color)) {
@@ -83,34 +78,35 @@ public class Main {
                 System.out.println("Error: Vertex index out of bounds - vertex: " + vertex + ", metadata length: " + metadata.length());
             }
 
+
             // Ajoutez le sommet avec l'index correct
             weightedGraph.addVertex(currentVertexIndex);
 
-            for (int neighbor : graph.get(vertex)) {
-                int currentNeighborIndex = -1;
-                if (neighbor < metadata.length()) {
-                    currentNeighborIndex = mapColorToInt(metadata.charAt(neighbor) + "");
-                } else {
-                    System.out.println("Error: Neighbor index out of bounds - neighbor: " + neighbor + ", metadata length: " + metadata.length());
+            LinkedList<Integer> neighbors = graph.get(vertex);
+            if (neighbors != null) {
+                for (int neighbor : neighbors) {
+                    int currentNeighborIndex = -1;
+                    if (neighbor < metadata.length()) {
+                        currentNeighborIndex = mapColorToInt(metadata.charAt(neighbor) + "");
+                    } else {
+                        System.out.println("Error: Neighbor index out of bounds - neighbor: " + neighbor + ", metadata length: " + metadata.length());
+                    }
+
+                    // Assurez-vous de définir correctement les poids des arêtes en fonction des couleurs
+                    double weight = computeEdgeWeight(currentVertexIndex, currentNeighborIndex);
+
+                    // Ajoutez l'arête avec les indices corrects
+                    weightedGraph.addEgde(
+                            weightedGraph.vertexlist.get(Math.max(0, currentVertexIndex)),
+                            weightedGraph.vertexlist.get(Math.max(0, currentNeighborIndex)),
+                            weight
+                    );
                 }
-
-                // Assurez-vous de définir correctement les poids des arêtes en fonction des couleurs
-                double weight = computeEdgeWeight(currentVertexIndex, currentNeighborIndex);
-
-                // Ajoutez l'arête avec les indices corrects
-                weightedGraph.addEgde(
-                    weightedGraph.vertexlist.get(Math.max(0, currentVertexIndex)), // Utilisez Math.max pour éviter les index négatifs
-                    weightedGraph.vertexlist.get(Math.max(0, currentNeighborIndex)), // Utilisez Math.max pour éviter les index négatifs
-                    weight
-                );
             }
         }
 
-
-
         return weightedGraph;
     }
-
 
     private static double computeEdgeWeight(int color1, int color2) {
         // Exemple de calcul du poids en fonction des couleurs
@@ -127,7 +123,7 @@ public class Main {
         }
     }
 
-	private static int mapColorToInt(String color) {
+    private static int mapColorToInt(String color) {
         switch (color) {
             case "G":
                 return 1;

@@ -58,11 +58,17 @@ public class Main {
                 for (int i = 0; i < line.length(); i++) {
                     int vertex = i % ncols;
                     int color = mapColorToInt(String.valueOf(line.charAt(i)));
-                    LinkedList<Integer> neighbors = graph.getOrDefault(vertex, new LinkedList<>());
-                    if (!neighbors.contains(color)) {
-                        neighbors.add(color);
+
+                    // Vérifiez si les indices sont valides
+                    if (vertex < metadata.length() && color != -1) {
+                        LinkedList<Integer> neighbors = graph.getOrDefault(vertex, new LinkedList<>());
+                        if (!neighbors.contains(color)) {
+                            neighbors.add(color);
+                        }
+                        graph.put(vertex, neighbors);
+                    } else {
+                        System.out.println("Error: Invalid vertex or color - vertex: " + vertex + ", color: " + color);
                     }
-                    graph.put(vertex, neighbors);
                 }
             }
         }
@@ -71,13 +77,7 @@ public class Main {
 
         WeightedGraph weightedGraph = new WeightedGraph();
         for (int vertex : graph.keySet()) {
-            int currentVertexIndex = -1;
-            if (vertex < metadata.length()) {
-                currentVertexIndex = mapColorToInt(metadata.charAt(vertex) + "");
-            } else {
-                System.out.println("Error: Vertex index out of bounds - vertex: " + vertex + ", metadata length: " + metadata.length());
-            }
-
+            int currentVertexIndex = mapColorToInt(metadata.charAt(vertex) + "");
 
             // Ajoutez le sommet avec l'index correct
             weightedGraph.addVertex(currentVertexIndex);
@@ -85,20 +85,15 @@ public class Main {
             LinkedList<Integer> neighbors = graph.get(vertex);
             if (neighbors != null) {
                 for (int neighbor : neighbors) {
-                    int currentNeighborIndex = -1;
-                    if (neighbor < metadata.length()) {
-                        currentNeighborIndex = mapColorToInt(metadata.charAt(neighbor) + "");
-                    } else {
-                        System.out.println("Error: Neighbor index out of bounds - neighbor: " + neighbor + ", metadata length: " + metadata.length());
-                    }
+                    int currentNeighborIndex = mapColorToInt(metadata.charAt(neighbor) + "");
 
                     // Assurez-vous de définir correctement les poids des arêtes en fonction des couleurs
                     double weight = computeEdgeWeight(currentVertexIndex, currentNeighborIndex);
 
                     // Ajoutez l'arête avec les indices corrects
                     weightedGraph.addEgde(
-                            weightedGraph.vertexlist.get(Math.max(0, currentVertexIndex)),
-                            weightedGraph.vertexlist.get(Math.max(0, currentNeighborIndex)),
+                            weightedGraph.vertexlist.get(currentVertexIndex),
+                            weightedGraph.vertexlist.get(currentNeighborIndex),
                             weight
                     );
                 }
